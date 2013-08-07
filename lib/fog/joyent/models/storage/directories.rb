@@ -19,7 +19,7 @@ module Fog
           response = service.list_directory(path)
 
           dirs = response.data.select do |o|
-            o[:type] == 'directory'}
+            o[:type] == 'directory'
           end
 
           dirs = dirs.map do |d|
