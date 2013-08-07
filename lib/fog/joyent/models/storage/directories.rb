@@ -1,15 +1,31 @@
+require 'fog/core/collection'
+require 'fog/joyent/models/storage/directory'
+
 module Fog
   module Storage
     class Joyent
       class Directories < Fog::Collection
         model Fog::Storage::Joyent::Directory
 
-        def all
-          directory ? path = directory.parent : path = ''
-          path = path + '/' unless path =~ /\/$/
-          data = service.list_directory(path)
+        attribute :directory
 
-          dirs = data.select {|o| o[:type] == 'directory'}
+        def all
+          path = if directory
+            directory.path
+          else
+            service.user_path
+          end
+
+          response = service.list_directory(path)
+
+          dirs = response.data.select do |o|
+            o[:type] == 'directory'}
+          end
+
+          dirs = dirs.map do |d|
+            d[:directory] = directory
+          end
+
           load(dirs)
         end
 

@@ -5,6 +5,8 @@ class Joyent < Fog::Bin
       case key
       when :compute
         Fog::Compute::Joyent
+      when :storage
+        Fog::Storage::Joyent
       else
         raise ArgumentError, "Unrecognized service: #{key}"
       end
@@ -16,6 +18,9 @@ class Joyent < Fog::Bin
         when :compute
           Fog::Logger.warning("Joyent[:compute] is not recommended, use Compute[:joyent] for portability")
           Fog::Compute.new(:provider => 'Joyent')
+        when :storage
+          Fog::Logger.warning("Joyent[:storage] is not recommended, use Storage[:joyent] for portability")
+          Fog::Storage.new(:provider => 'Joyent')
         else
           raise ArgumentError, "Unrecognized service: #{key.inspect}"
         end

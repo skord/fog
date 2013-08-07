@@ -3,7 +3,7 @@ module Fog
     class Joyent
       class Real
         def put_directory(directory, options = {})
-          object_path = user_path_to(directory)
+          object_path = directory
           self.connection.put_directory(directory, options)
         end
       end

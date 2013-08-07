@@ -30,21 +30,19 @@ module Fog
         def save
           self.key = attributes[:directory].key + key if attributes[:directory]
           self.key = key + '/' unless key =~ /\/$/
-          res = service.post_namespace key
+          res = service.put_directory(key)
           reload
         end
 
-        def destroy(opts={})
-          if opts[:recursive]
-            files.each {|f| f.destroy }
-            directories.each do |d|
-              d.files.each {|f| f.destroy }
-              d.destroy(opts)
-            end
+        def path
+          if parent
+            "#{parent.path}/{name}"
           end
-          service.delete_namespace key
         end
 
+        def destroy(opts={})
+          service.delete_directory(path)
+        end
 
       end
 

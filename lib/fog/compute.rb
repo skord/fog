@@ -9,7 +9,6 @@ module Fog
       attributes = attributes.dup # prevent delete from having side effects
       provider = attributes.delete(:provider).to_s.downcase.to_sym
 
-
       case provider
       when :gogrid
         require 'fog/go_grid/compute'
@@ -22,7 +21,7 @@ module Fog
         require 'fog/bare_metal_cloud/compute'
         Fog::Compute::BareMetalCloud.new(attributes)
       when :rackspace
-        version = attributes.delete(:version) 
+        version = attributes.delete(:version)
         version = version.to_s.downcase.to_sym unless version.nil?
         if version == :v1
           Fog::Logger.deprecation "First Gen Cloud Servers are deprecated. Please use `:version => :v2` attribute to use Next Gen Cloud Servers."

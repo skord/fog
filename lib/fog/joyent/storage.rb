@@ -1,14 +1,18 @@
+require 'fog/storage'
+require 'fog/joyent'
+require 'fog/joyent/errors'
+
 require 'ruby-manta'
 
 module Fog
   module Storage
 
     class Joyent < Fog::Service
-      attr_reader :connection
-
       requires :joyent_username
       requires :joyent_manta_url
-      requires :joyent_private_key
+      requires :joyent_keyfile
+
+      recognizes :ssl_verify_peer
 
       model_path 'fog/joyent/models/storage'
       model :directory
@@ -43,27 +47,50 @@ module Fog
       request :get_job_failures
       request :gen_signed_url
 
-      def user_path_to(args*)
-        "/#{File.join(@joyent_username, args}"
+      module Common
+        attr_reader :connection
+        attr_reader :root
+
+        def user_path(*args)
+          "/#{@joyent_username}"
+        end
+
+        def initialize(options = {})
+          @joyent_username = options[:joyent_username]
+          @joyent_manta_url = options[:joyent_manta_url]
+          @joyent_keyfile = options[:joyent_keyfile]
+
+          @ssl_verify_peer = options[:ssl_verify_peer] || false
+
+          unless ::File.exists? @joyent_keyfile
+            raise ArgumentError.new(":joyent_keyfile does not exist: #{@joyent_keyfile}")
+          end
+
+          @joyent_keydata = ::File.read(@joyent_keyfile)
+
+          @connection = MantaClient.new(
+            @joyent_manta_url,
+            @joyent_username,
+            @joyent_keydata,
+            :disable_ssl_verification => !@ssl_verify_peer
+          )
+        end
+
+        def build_response(manta_client_res)
+          headers, body = manta_client_res
+          Excon::Response.new(
+            headers: headers,
+            body: body
+          )
+        end
       end
-    end
 
-    class Mock < Joyent::Service
+      class Real
+        include Common
+      end
 
-    end
-
-    class Real < Joyent::Service
-      @joyent_username = options[:joyent_username]
-      @joyent_manta_host = options[:joyent_manta_host]
-      @joyent_private_key = options[:joyent_private_key]
-      @ssl_verify_peer = options[:ssl_verify_peer] || false
-
-      def initialize(options = {})
-        @connection = MantaClient.new(
-          @joyent_manta_host,
-          @joyent_username,
-          @joyent_private_key,
-          :disable_ssl_verification => !@ssl_verify_peer)
+      class Mock
+        include Common
       end
     end
   end
