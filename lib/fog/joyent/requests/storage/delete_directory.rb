@@ -3,8 +3,7 @@ module Fog
     class Joyent
       class Real
         def delete_directory(directory, options = {})
-          dir_path = user_path_to(directory)
-          self.connection.delete_directory(dir, options)
+          self.build_response(self.connection.delete_directory(directory, options))
         end
       end
     end

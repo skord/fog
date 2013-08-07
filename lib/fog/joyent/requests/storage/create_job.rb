@@ -3,7 +3,7 @@ module Fog
     class Joyent
       class Real
         def create_job(options={})
-          self.connection.create_job(options)
+          self.build_response(self.connection.create_job(options))
         end
       end
     end

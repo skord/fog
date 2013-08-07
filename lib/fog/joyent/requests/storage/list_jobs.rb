@@ -4,7 +4,7 @@ module Fog
       class Real
       	# valid states: :done, :all, :running
         def get_job_errors(state, options={})
-          self.connection.get_job_errors(state, options)
+          self.build_response(self.connection.get_job_errors(state, options))
         end
       end
     end

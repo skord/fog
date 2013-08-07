@@ -3,7 +3,7 @@ module Fog
     class Joyent
       class Real
         def get_job_input(job_path, options={})
-          self.connection.get_job_input(job_path, options)
+          self.build_response(self.connection.get_job_input(job_path, options))
         end
       end
     end
