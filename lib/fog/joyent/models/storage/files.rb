@@ -15,7 +15,7 @@ module Fog
           response = service.list_directory(directory.path)
           files = response.body.select {|f| f[:type] === 'object'}
           files.map do |f|
-            dir[:f] = directory
+            dir[:directory] = directory
           end
         end
       end

@@ -51,7 +51,7 @@ module Fog
         attr_reader :connection
         attr_reader :root
 
-        def user_path(*args)
+        def user_path()
           "/#{@joyent_username}"
         end
 
@@ -77,7 +77,7 @@ module Fog
         end
 
         def build_response(manta_client_res)
-          headers, body = manta_client_res
+          body, headers = manta_client_res
           Excon::Response.new(
             headers: headers,
             body: body
