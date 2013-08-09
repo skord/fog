@@ -1,3 +1,5 @@
+require 'minitest/autorun'
+
 Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
 
   tests('initialize') do
@@ -45,7 +47,8 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
     @service = Fog::Storage[:joyent]
 
     tests "list_directory" do
-      res = @service.list_directory(@service.user_path + '/stor')
+      p = @service.user_path + '/stor'
+      res = @service.list_directory(p)
 
       returns(Excon::Response) do
         res.class
@@ -56,11 +59,11 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
       end
     end
 
-    tests "put_object" do
-      dir = File.join(@service.user_path, '/stor')
-      f = 'ruby-manta.test.hello'
 
-      res = @service.put_object(dir, f, 'hello ruby-manta')
+    tests "put_directory" do
+      dir = File.join(@service.user_path, '/stor/ruby-manta.test')
+
+      res = @service.put_directory(dir)
 
       returns(Excon::Response) do
         res.class
@@ -71,10 +74,26 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
       end
     end
 
-    tests "put_directory" do
+
+    tests "delete_directory" do
       dir = File.join(@service.user_path, '/stor/ruby-manta.test')
 
-      res = @service.put_directory(dir)
+      res = @service.delete_directory(dir)
+
+      returns(Excon::Response) do
+        res.class
+      end
+
+      returns(true, 'true for success delete') do
+        res[:body]
+      end
+    end
+
+    tests "put_object" do
+      dir = File.join(@service.user_path, '/stor')
+      f = 'ruby-manta.test.hello'
+
+      res = @service.put_object(dir, f, 'hello ruby-manta')
 
       returns(Excon::Response) do
         res.class
@@ -99,5 +118,93 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
       end
     end
 
+
+    tests "put_snaplink" do
+      spath = File.join(@service.user_path, 'stor', 'ruby-manta.test.hello')
+      dpath = File.join(@service.user_path, 'stor', 'ruby-manta.test.world')
+
+      res = @service.put_snaplink(spath, dpath)
+
+      returns(Excon::Response) do
+        res.class
+      end
+
+      returns(true, 'true for success snaplink') do
+        res[:body]
+      end
+
+      test 'get created snaplink' do
+        res = @service.get_object(File.join(@service.user_path, 'stor'), 'ruby-manta.test.world')
+        returns(Excon::Response) do
+          res.class
+        end
+        returns('hello ruby-manta') do
+          res[:body]
+        end
+      end
+    end
+
+
+    tests "jobs" do
+      job_details = {
+        :name => 'total word count',
+        :phases => [ {
+          :exec => 'wc'
+        }, {
+          :type => 'reduce',
+          :exec => "awk '{ l += $1; w += $2; c += $3 } END { print l, w, c }'"
+        } ]
+      }
+
+      res = {}
+      res[:job] = @service.create_job(job_details)
+
+      tests "create_job" do
+        returns(Excon::Response) { res[:job].class }
+        returns(String) { res[:job][:body].class }
+      end
+
+      tests "add_job_keys" do
+        f = File.join(@service.user_path, 'stor', 'ruby-manta-test.hello')
+        res[:add_job_keys] = @service.add_job_keys(res[:job][:body], [f])
+        returns(Excon::Response) { res[:add_job_keys].class }
+      end
+
+      tests "get_job" do
+        job_path = res[:job][:body]
+        returns(Excon::Response) { @service.get_job(res[:job][:body]).class }
+      end
+    end
+
+    tests "delete_object" do
+      dir = File.join(@service.user_path, '/stor')
+      f = 'ruby-manta.test.hello'
+
+      res = @service.delete_object(dir, f)
+
+      returns(Excon::Response) do
+        res.class
+      end
+
+      returns(true, 'true for success delete') do
+        res[:body]
+      end
+    end
   end
+
+  tests "models" do
+    @service = Fog::Storage[:joyent]
+
+    tests "directories.all" do
+      directories = @service.directories.all
+      returns(Fog::Storage::Joyent::Directories) { directories.class }
+    end
+
+    tests "files.all" do
+      files = @service.files.all
+      returns(Fog::Storage::Joyent::Files) { files.class }
+    end
+
+  end
+
 end

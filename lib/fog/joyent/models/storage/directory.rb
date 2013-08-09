@@ -3,6 +3,13 @@ module Fog
     class Joyent
       class Directory < Fog::Model
         identity :key, :aliases => 'name'
+        attribute :path
+        attribute :directory
+        attribute :creation_date, :aliases => 'mtime', :type => 'time'
+
+        def full_path
+          ::File.join(directory.path, name)
+        end
 
         def directories
           @directories ||= begin

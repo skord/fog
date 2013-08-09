@@ -10,13 +10,19 @@ module Fog
         attribute :directory
 
         def all(options = {})
-          require :directory
+          unless directory
+            path = ::File.join(service.user_path, 'stor')
+            directory = Fog::Storage::Joyent::Directory.new(:path => path)
+          end
 
           response = service.list_directory(directory.path)
-          files = response.body.select {|f| f[:type] === 'object'}
-          files.map do |f|
-            dir[:directory] = directory
+          files = response.body.select {|f| f['type'] === 'object'}.map do |f|
+            f[:directory] = directory
+            f[:path] = ::File.join(directory.path, f["name"])
+            f
           end
+
+          load(files)
         end
       end
     end

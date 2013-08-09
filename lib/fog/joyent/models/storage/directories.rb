@@ -10,24 +10,28 @@ module Fog
         attribute :directory
 
         def all
-          path = if directory
-            directory.path
-          else
-            service.user_path
+
+          unless directory
+            path = ::File.join(service.user_path, 'stor')
+            directory = Fog::Storage::Joyent::Directory.new(:path => path)
           end
 
-          response = service.list_directory(path)
+          response = service.list_directory(directory.path)
 
-          dirs = response.data.select do |o|
-            o[:type] == 'directory'
-          end
-
-          dirs = dirs.map do |d|
+          dirs = response[:body].select {|o| o['type'] == 'directory' }.map do |d|
             d[:directory] = directory
+            d[:path] = ::File.join(directory.path, d["name"])
+            d
           end
 
           load(dirs)
         end
+
+        def new(attributes ={})
+          attributes = {:directory => directory}.merge(attributes) if directory
+          super(attributes)
+        end
+
 
       end
     end

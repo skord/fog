@@ -48,7 +48,7 @@ module Fog
       request :gen_signed_url
 
       module Common
-        attr_reader :connection
+        attr_accessor :connection
         attr_reader :root
 
         def user_path()
