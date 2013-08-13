@@ -23,13 +23,13 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
     raises ArgumentError, "invalid key raises ArgumentError" do
       @service = Fog::Storage::Joyent.new(
         test_params.merge(:joyent_keyfile => "some-bogus-file")
-      )
+        )
     end
 
     raises ArgumentError, "invalid manta url raises ArgumentError" do
       @service = Fog::Storage::Joyent.new(
         test_params.merge(:joyent_manta_url => "google.com")
-      )
+        )
     end
 
     test "#user_path should = /<username>" do
@@ -150,10 +150,10 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
         :name => 'total word count',
         :phases => [ {
           :exec => 'wc'
-        }, {
-          :type => 'reduce',
-          :exec => "awk '{ l += $1; w += $2; c += $3 } END { print l, w, c }'"
-        } ]
+          }, {
+            :type => 'reduce',
+            :exec => "awk '{ l += $1; w += $2; c += $3 } END { print l, w, c }'"
+            } ]
       }
 
       res = {}
@@ -195,46 +195,63 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
   tests "models" do
     @service = Fog::Storage[:joyent]
 
-    tests "directories.all" do
-      directories = @service.directories.all
-      returns(Fog::Storage::Joyent::Directories) { directories.class }
-    end
-
-    tests "files.all" do
-      files = @service.files.all
-      returns(Fog::Storage::Joyent::Files) { files.class }
-    end
-
-    tests "save file" do
-      file = @service.files.create(
-        :directory => @service.user_path + '/stor',
-        :key => 'hello',
-        :body => 'hello'
-      )
-
-      test "object contains body" do
-        file.body == 'hello'
+    tests "File" do
+      tests "files.all" do
+        files = @service.files.all
+        returns(Fog::Storage::Joyent::Files) { files.class }
       end
 
-      test "object contains etag" do
-        file.etag.kind_of?(String)
+      tests "save file" do
+        file = @service.files.create(
+          :directory => @service.user_path + '/stor',
+          :key => 'hello.file',
+          :body => 'hello'
+          )
+
+        test "object contains body" do
+          file.body == 'hello'
+        end
+
+        test "object contains etag" do
+          file.etag.kind_of?(String)
+        end
+
+        test "object contains size" do
+          file.size == 5
+        end
       end
 
-      test "object contains size" do
-        file.size == 5
+
+      tests "destroy file" do
+        file = @service.files.create(
+          :directory => @service.user_path + '/stor',
+          :key => 'hello.file',
+          :body => 'hello'
+        )
+
+        test "destroy succeeded" do
+          file.destroy
+        end
       end
     end
 
 
-    tests "destroy file" do
-      file = @service.files.create(
-        :directory => @service.user_path + '/stor',
-        :key => 'hello',
-        :body => 'hello'
-      )
+    tests "Directory" do
+      test "create" do
+        directory = @service.directories.create(
+          :directory => ::File.join(@service.user_path, 'stor'),
+          :key => 'hello.dir'
+        )
 
-      test "destroy succeeded" do
-        file.destroy
+        returns(Fog::Storage::Joyent::Directory) do
+          directory.class
+        end
+      end
+
+      test "destroy" do
+        directory = @service.directories.get(::File.join(@service.user_path, 'stor', 'hello.dir'))
+        puts directory.inspect
+        directory.destroy
       end
     end
 

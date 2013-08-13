@@ -13,10 +13,10 @@ module Fog
 
           unless directory
             path = ::File.join(service.user_path, 'stor')
-            directory = Fog::Storage::Joyent::Directory.new(:path => path)
+            directory = Fog::Storage::Joyent::Directory.new(:key => path)
           end
 
-          response = service.list_directory(directory.path)
+          response = service.list_directory(directory.key)
 
           dirs = response[:body].select {|o| o['type'] == 'directory' }.map do |d|
             d[:directory] = directory
@@ -27,11 +27,17 @@ module Fog
           load(dirs)
         end
 
-        def new(attributes ={})
-          attributes = {:directory => directory}.merge(attributes) if directory
-          super(attributes)
+        def get(key, options = {})
+          new(:key => key)
         end
 
+        def new(attributes = {})
+          if directory
+            attributes = {:directory => directory}.merge(attributes)
+          end
+
+          super(attributes)
+        end
 
       end
     end

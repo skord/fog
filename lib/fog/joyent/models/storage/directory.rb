@@ -3,12 +3,15 @@ module Fog
     class Joyent
       class Directory < Fog::Model
         identity :key, :aliases => 'name'
-        attribute :path
-        attribute :directory
         attribute :creation_date, :aliases => 'mtime', :type => 'time'
 
-        def full_path
-          ::File.join(directory.path, name)
+
+        def directory
+          @directory
+        end
+
+        def directory=(new_directory)
+          @directory = new_directory
         end
 
         def directories
@@ -27,6 +30,27 @@ module Fog
               :service => service
             )
           end
+        end
+
+        def destroy
+          requires :key
+          res = service.delete_directory(key)
+          true
+        end
+
+        def save
+          requires :directory, :key
+
+          d = if directory.kind_of?(Fog::Storage::Joyent::Directory)
+            directory.key
+          else
+            directory
+          end
+
+          path = ::File.join(d, key)
+          res = service.put_directory(path)
+          self.key = key
+          reload
         end
       end
     end

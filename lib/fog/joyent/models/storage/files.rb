@@ -12,13 +12,13 @@ module Fog
         def all(options = {})
           unless directory
             path = ::File.join(service.user_path, 'stor')
-            directory = Fog::Storage::Joyent::Directory.new(:path => path)
+            directory = Fog::Storage::Joyent::Directory.new(:key => path)
           end
 
-          response = service.list_directory(directory.path)
+          response = service.list_directory(directory.key)
           files = response.body.select {|f| f['type'] === 'object'}.map do |f|
             f[:directory] = directory
-            f[:path] = ::File.join(directory.path, f["name"])
+            f[:key] = ::File.join(directory.key, f["name"])
             f
           end
 
