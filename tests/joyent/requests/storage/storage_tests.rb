@@ -205,6 +205,39 @@ Shindo.tests('Fog::Storage[:joyent]', ['joyent', 'joyent-storage']) do
       returns(Fog::Storage::Joyent::Files) { files.class }
     end
 
+    tests "save file" do
+      file = @service.files.create(
+        :directory => @service.user_path + '/stor',
+        :key => 'hello',
+        :body => 'hello'
+      )
+
+      test "object contains body" do
+        file.body == 'hello'
+      end
+
+      test "object contains etag" do
+        file.etag.kind_of?(String)
+      end
+
+      test "object contains size" do
+        file.size == 5
+      end
+    end
+
+
+    tests "destroy file" do
+      file = @service.files.create(
+        :directory => @service.user_path + '/stor',
+        :key => 'hello',
+        :body => 'hello'
+      )
+
+      test "destroy succeeded" do
+        file.destroy
+      end
+    end
+
   end
 
 end
