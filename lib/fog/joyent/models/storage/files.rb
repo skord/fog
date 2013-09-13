@@ -8,6 +8,7 @@ module Fog
         model Fog::Storage::Joyent::File
 
         attribute :directory
+        attr_accessor :directory
 
         def all(options = {})
           unless directory
@@ -15,10 +16,10 @@ module Fog
             directory = Fog::Storage::Joyent::Directory.new(:key => path)
           end
 
-          response = service.list_directory(directory.key)
-          files = response.body.select {|f| f['type'] === 'object'}.map do |f|
-            f[:directory] = directory
-            f[:key] = ::File.join(directory.key, f["name"])
+          response = service.list_directory(@directory.key)
+          files = response.body.select {|f| f['type'] == 'object'}.map do |f|
+            f[:directory] = @directory
+            f[:key] = ::File.join(@directory.key, f["name"])
             f
           end
 

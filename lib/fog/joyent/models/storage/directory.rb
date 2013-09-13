@@ -4,7 +4,7 @@ module Fog
       class Directory < Fog::Model
         identity :key, :aliases => 'name'
         attribute :creation_date, :aliases => 'mtime', :type => 'time'
-
+        attr_accessor :directory
 
         def directory
           @directory

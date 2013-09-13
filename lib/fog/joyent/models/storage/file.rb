@@ -1,12 +1,14 @@
 module Fog
   module Storage
     class Joyent
-      attr_reader :directory
 
       class File < Fog::Model
         identity :key,  :aliases => 'name'
         attribute :size
         attribute :etag
+        attribute :directory
+        attr_accessor :directory
+        
 
         def directory
           @directory

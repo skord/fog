@@ -20,7 +20,7 @@ module Fog
 
           dirs = response[:body].select {|o| o['type'] == 'directory' }.map do |d|
             d[:directory] = directory
-            d[:path] = ::File.join(directory.path, d["name"])
+            d[:key] = ::File.join(directory.key, d["name"])
             d
           end
 
